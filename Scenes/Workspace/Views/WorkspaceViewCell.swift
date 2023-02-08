@@ -13,6 +13,27 @@ public final class WorkspaceViewCell: UICollectionViewCell {
         return String(describing: self)
     }
     
+    private lazy var containerStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [boardNameLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.layoutMargins = UIEdgeInsets(top: 10, left: 10, bottom: 5, right: 10)
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.axis = .vertical
+        
+        let paddingView = UIView()
+        stackView.addArrangedSubview(paddingView)
+        
+        return stackView
+    }()
+    
+    private lazy var boardNameLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Nome do board"
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        return label
+    }()
+    
 // MARK: - Cell Life Cycle
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -26,7 +47,9 @@ public final class WorkspaceViewCell: UICollectionViewCell {
     private func setupCell() {
         self.layer.cornerRadius = 5
         self.layer.masksToBounds = true
+        addSubview(containerStackView)
         setupGradient()
+        addConstraints()
     }
     
     private func setupGradient() {
@@ -36,5 +59,14 @@ public final class WorkspaceViewCell: UICollectionViewCell {
         gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 1.0, y: 0.5)
         self.layer.insertSublayer(gradientLayer, at: 0)
+    }
+    
+    private func addConstraints() {
+        NSLayoutConstraint.activate([
+            containerStackView.topAnchor.constraint(equalTo: self.topAnchor),
+            containerStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            containerStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            containerStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+        ])
     }
 }
