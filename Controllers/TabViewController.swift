@@ -47,7 +47,6 @@ class TabViewController: UITabBarController {
         accountNavigationController.title = "Account"
         
         tabBar.tintColor = .systemBlue
-        tabBar.barTintColor = .gray
         tabBar.unselectedItemTintColor = .secondaryLabel
         
         tabBar.layer.borderWidth = 0.50
