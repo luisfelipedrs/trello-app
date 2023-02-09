@@ -9,10 +9,6 @@ import UIKit
 
 public final class WorkspaceViewCell: UICollectionViewCell {
     
-    static var reuseId: String {
-        return String(describing: self)
-    }
-    
     private lazy var containerStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [boardNameLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -35,6 +31,10 @@ public final class WorkspaceViewCell: UICollectionViewCell {
     }()
     
 // MARK: - Cell Life Cycle
+    static var reuseId: String {
+        return String(describing: self)
+    }
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
@@ -45,8 +45,8 @@ public final class WorkspaceViewCell: UICollectionViewCell {
     }
     
     private func setupCell() {
-        self.layer.cornerRadius = 5
-        self.layer.masksToBounds = true
+        layer.cornerRadius = 5
+        layer.masksToBounds = true
         addSubview(containerStackView)
         setupGradient()
         addConstraints()
