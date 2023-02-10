@@ -7,15 +7,15 @@
 
 import UIKit
 
-class TabViewController: UITabBarController {
+public final class TabViewController: UITabBarController {
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
 
         setupTabs()
     }
     
-    func setupTabs() {
+    private func setupTabs() {
         // workspace
         let workspaceViewController = WorkspaceViewController()
         workspaceViewController.viewModel = WorkspaceViewModel()
@@ -47,7 +47,6 @@ class TabViewController: UITabBarController {
         accountNavigationController.title = "Account"
         
         tabBar.tintColor = .systemBlue
-        tabBar.barTintColor = .gray
         tabBar.unselectedItemTintColor = .secondaryLabel
         
         tabBar.layer.borderWidth = 0.50

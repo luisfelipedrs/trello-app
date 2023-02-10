@@ -7,6 +7,6 @@
 
 import Foundation
 
-class WorkspaceViewModel {
+public final class WorkspaceViewModel {
     
 }
