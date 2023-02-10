@@ -10,8 +10,7 @@ import UIKit
 extension UIViewController {
     
     func configureViews(color: UIColor? = nil,
-                        collection collectionView: UICollectionView? = nil,
-                        scroll scrollView: UIScrollView? = nil) {
+                        collection collectionView: UICollectionView? = nil) {
         
         view.backgroundColor = color
         
@@ -21,13 +20,6 @@ extension UIViewController {
                                      collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                                      collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                                      collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)])
-        
-        guard let scrollView = scrollView else { return }
-        view.addSubview(scrollView)
-        NSLayoutConstraint.activate([scrollView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                                     scrollView.widthAnchor.constraint(equalToConstant: 1000),
-                                     scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                                     scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)])
     }
     
     func configureBackButton() {

@@ -42,7 +42,7 @@ public final class WorkspaceViewController: UIViewController {
 // MARK: - CollectionView DataSource and Delegate
 extension WorkspaceViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        5
+        20
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

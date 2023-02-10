@@ -11,6 +11,14 @@ public final class BoardViewController: UIViewController {
     
     var colors: [UIColor] = [.green, .pinkishPink, .twilightPurple, .systemBlue, .lightGray]
     
+    private lazy var pageControl: UIPageControl = {
+        let pageControl = UIPageControl()
+        pageControl.translatesAutoresizingMaskIntoConstraints = false
+        pageControl.numberOfPages = colors.count
+        pageControl.backgroundStyle = .prominent
+        return pageControl
+    }()
+    
     private lazy var collectionViewLayout: UICollectionViewFlowLayout = {
         let layout = UICollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 0, left: 40, bottom: 0, right: 40)
@@ -28,15 +36,25 @@ public final class BoardViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.showsHorizontalScrollIndicator = false
-        collectionView.isPagingEnabled = false
         return collectionView
     }()
 
     public override func viewDidLoad() {
         super.viewDidLoad()
-        configureViews(color: .systemBackground, collection: collectionView)
         configureTitleWith(string: "Nome do board")
+        configureViews(color: .systemBackground, collection: collectionView)
         configureBackButton()
+        configurePageControl()
+    }
+    
+    private func configurePageControl() {
+        view.addSubview(pageControl)
+        addConstraints()
+    }
+    
+    private func addConstraints() {
+        NSLayoutConstraint.activate([pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)])
     }
 }
 
@@ -58,15 +76,16 @@ extension BoardViewController: UICollectionViewDataSource, UICollectionViewDeleg
     
     public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         targetContentOffset.pointee = scrollView.contentOffset
-        var indexes = self.collectionView.indexPathsForVisibleItems
+        var indexes = collectionView.indexPathsForVisibleItems
         indexes.sort()
         var index = indexes.first!
-        let cell = self.collectionView.cellForItem(at: index)!
-        let position = self.collectionView.contentOffset.x - cell.frame.origin.x
+        let cell = collectionView.cellForItem(at: index)!
+        let position = collectionView.contentOffset.x - cell.frame.origin.x
         if position > cell.frame.size.width / 2 {
            index.row = index.row + 1
         }
-        self.collectionView.scrollToItem(at: index, at: .centeredHorizontally, animated: true )
+        collectionView.scrollToItem(at: index, at: .centeredHorizontally, animated: true )
+        pageControl.currentPage = index.item
     }
 }
 
