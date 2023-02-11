@@ -40,7 +40,29 @@ public final class WorkspaceViewController: UIViewController {
         applyTheme()
         configureViews(color: .systemBackground, collection: collectionView)
         configureBackButton()
+        configureNewBoardButton()
+        viewModel?.delegate = self
         viewModel?.getBoards()
+    }
+    
+    private func configureNewBoardButton() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addNewBoard))
+        navigationItem.rightBarButtonItem?.tintColor = .white
+    }
+    
+    @objc private func addNewBoard() {
+        let ac = UIAlertController(title: "Enter board title: ", message: nil, preferredStyle: .alert)
+            ac.addTextField()
+
+            let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
+                let answer = ac.textFields![0]
+                let newBoard = Board(title: answer.text!, lists: nil)
+                self.viewModel?.boards.append(newBoard)
+            }
+
+            ac.addAction(submitAction)
+
+            present(ac, animated: true)
     }
 }
 
@@ -86,5 +108,14 @@ extension WorkspaceViewController: UICollectionViewDelegateFlowLayout {
         let itemWidth = utilArea / itemsPerLine
         
         return CGSize(width: itemWidth, height: itemWidth * cellProportion)
+    }
+}
+
+// MARK: - WorkSpaceViewModelDelegate
+extension WorkspaceViewController: WorkspaceViewModelDelegate {
+    func reload() {
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
 }

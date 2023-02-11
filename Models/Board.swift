@@ -9,5 +9,5 @@ import Foundation
 
 struct Board {
     var title: String
-    var lists: [List]
+    var lists: [List]?
 }

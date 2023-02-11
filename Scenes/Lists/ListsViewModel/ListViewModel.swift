@@ -12,7 +12,8 @@ public final class ListViewModel {
     var board: Board? {
         didSet {
             guard let board = board else { return }
-            lists = board.lists
+            guard let lists = board.lists else { return }
+            self.lists = lists
         }
     }
     

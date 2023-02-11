@@ -7,9 +7,19 @@
 
 import Foundation
 
+protocol WorkspaceViewModelDelegate: AnyObject {
+    func reload()
+}
+
 public final class WorkspaceViewModel {
     
-    var boards: [Board] = []
+    weak var delegate: WorkspaceViewModelDelegate?
+    
+    var boards: [Board] = [] {
+        didSet {
+            self.delegate?.reload()
+        }
+    }
     
     public func getBoards() {
         boards = MockApi.getBoads()
