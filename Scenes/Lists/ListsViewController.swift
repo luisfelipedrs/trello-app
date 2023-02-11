@@ -7,15 +7,16 @@
 
 import UIKit
 
-public final class BoardViewController: UIViewController {
+public final class ListsViewController: UIViewController {
     
-    var colors: [UIColor] = [.green, .pinkishPink, .twilightPurple, .systemBlue, .lightGray]
+    var viewModel: ListViewModel?
     
     private lazy var pageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.translatesAutoresizingMaskIntoConstraints = false
-        pageControl.numberOfPages = colors.count
+        pageControl.numberOfPages = viewModel?.lists.count ?? 0
         pageControl.backgroundStyle = .prominent
+        pageControl.isHidden = (viewModel?.lists.count ?? 0) > 1 ? false : true
         return pageControl
     }()
     
@@ -31,7 +32,7 @@ public final class BoardViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: collectionViewLayout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(BoardViewCell.self, forCellWithReuseIdentifier: BoardViewCell.reuseId)
+        collectionView.register(ListViewCell.self, forCellWithReuseIdentifier: ListViewCell.reuseId)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -41,10 +42,14 @@ public final class BoardViewController: UIViewController {
 
     public override func viewDidLoad() {
         super.viewDidLoad()
-        configureTitleWith(string: "Nome do board")
+        setupViews()
+    }
+    
+    private func setupViews() {
         configureViews(color: .systemBackground, collection: collectionView)
         configureBackButton()
         configurePageControl()
+        configureTitleWith(string: (viewModel?.board!.title)!)
     }
     
     private func configurePageControl() {
@@ -59,18 +64,18 @@ public final class BoardViewController: UIViewController {
 }
 
 // MARK: - CollectionView DataSource and Delegate
-extension BoardViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension ListsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return colors.count
+        return viewModel?.lists.count ?? 0
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BoardViewCell.reuseId, for: indexPath) as? BoardViewCell else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ListViewCell.reuseId, for: indexPath) as? ListViewCell else {
             fatalError()
         }
         
-        let color = colors[indexPath.row]
-        cell.backgroundColor = color
+        let list = viewModel?.lists[indexPath.row]
+        cell.list = list
         return cell
     }
     
@@ -90,21 +95,21 @@ extension BoardViewController: UICollectionViewDataSource, UICollectionViewDeleg
 }
 
 // MARK: - CollectionViewFlowLayout
-extension BoardViewController: UICollectionViewDelegateFlowLayout {
+extension ListsViewController: UICollectionViewDelegateFlowLayout {
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout else {
             fatalError()
         }
-        
+
         let itemsPerLine: CGFloat = 1
         let cellProportion: CGFloat = 40/25
-        
+
         let sectionMargins = flowLayout.sectionInset
         let itemsSpacing = flowLayout.minimumInteritemSpacing
-        
+
         let utilArea = collectionView.bounds.width - (sectionMargins.left + sectionMargins.right) - itemsSpacing * (itemsPerLine - 1)
         let itemWidth = utilArea / itemsPerLine
-        
+
         return CGSize(width: itemWidth, height: itemWidth * cellProportion)
     }
 }

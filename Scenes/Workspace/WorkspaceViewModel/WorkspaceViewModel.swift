@@ -9,4 +9,9 @@ import Foundation
 
 public final class WorkspaceViewModel {
     
+    var boards: [Board] = []
+    
+    public func getBoards() {
+        boards = MockApi.getBoads()
+    }
 }
