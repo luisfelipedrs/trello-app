@@ -7,6 +7,10 @@
 
 import Foundation
 
-struct Card {
+class Card {
     var title: String
+    
+    init(title: String) {
+        self.title = title
+    }
 }

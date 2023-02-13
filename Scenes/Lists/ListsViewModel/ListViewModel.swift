@@ -9,13 +9,17 @@ import Foundation
 
 public final class ListViewModel {
     
-    var board: Board? {
-        didSet {
-            guard let board = board else { return }
-            guard let lists = board.lists else { return }
-            self.lists = lists
-        }
+    weak var delegate: DataReloadDelegate?
+    
+    var board: Board?
+    
+    func getLists() {
+        guard let boardLists = board?.lists else { return }
+        board?.lists = boardLists
     }
     
-    var lists: [List] = []
+    func addList(_ list: List) {
+        self.board?.addList(list)
+        self.delegate?.reload()
+    }
 }

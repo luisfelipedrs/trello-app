@@ -11,6 +11,7 @@ public final class ListViewCell: UICollectionViewCell {
     
     var list: List? {
         didSet {
+            self.tableView.reloadData()
             guard let list = list else { return }
             setupFor(list: list)
         }
@@ -41,6 +42,7 @@ public final class ListViewCell: UICollectionViewCell {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(CardViewCell.self, forCellReuseIdentifier: CardViewCell.reuseId)
+        tableView.backgroundColor = .systemPurple
         tableView.delegate = self
         tableView.dataSource = self
         return tableView
@@ -85,19 +87,20 @@ public final class ListViewCell: UICollectionViewCell {
 // MARK: - UITableView Delegate and DataSource implementations
 extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return list?.cards.count ?? 0
+        return list?.cards?.count ?? 0
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CardViewCell.reuseId, for: indexPath) as? CardViewCell else {
             fatalError()
         }
-        let card = list?.cards[indexPath.row]
+        let card = list?.cards?[indexPath.row]
         cell.card = card
         return cell
     }
 }
 
+// MARK: - CardTableView implementations
 fileprivate class CardViewCell: UITableViewCell {
     
     static var reuseId: String {

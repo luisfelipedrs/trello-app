@@ -27,10 +27,6 @@ extension UIViewController {
         navigationItem.backBarButtonItem?.tintColor = .white
     }
     
-    func configurePlusButton() {
-        
-    }
-    
     func configureTitleWith(string: String) {
         let titleLabel = UILabel()
         titleLabel.text = string

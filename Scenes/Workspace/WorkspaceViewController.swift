@@ -56,12 +56,13 @@ public final class WorkspaceViewController: UIViewController {
 
             let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
                 let answer = ac.textFields![0]
-                let newBoard = Board(title: answer.text!, lists: nil)
-                self.viewModel?.boards.append(newBoard)
+                if !answer.text!.isEmpty {
+                    let newBoard = Board(title: answer.text!, lists: [])
+                    self.viewModel?.boards.append(newBoard)
+                }
             }
 
             ac.addAction(submitAction)
-
             present(ac, animated: true)
     }
 }
@@ -112,7 +113,7 @@ extension WorkspaceViewController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK: - WorkSpaceViewModelDelegate
-extension WorkspaceViewController: WorkspaceViewModelDelegate {
+extension WorkspaceViewController: DataReloadDelegate {
     func reload() {
         DispatchQueue.main.async {
             self.collectionView.reloadData()

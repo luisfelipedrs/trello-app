@@ -14,9 +14,15 @@ public final class ListsViewController: UIViewController {
     private lazy var pageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.translatesAutoresizingMaskIntoConstraints = false
-        pageControl.numberOfPages = viewModel?.lists.count ?? 0
+        
+//        pageControl.numberOfPages = viewModel?.lists.count ?? 0
+        pageControl.numberOfPages = viewModel?.board?.lists.count ?? 0
+
         pageControl.backgroundStyle = .prominent
-        pageControl.isHidden = (viewModel?.lists.count ?? 0) > 1 ? false : true
+        
+//        pageControl.isHidden = (viewModel?.lists.count ?? 0) > 1 ? false : true
+        pageControl.isHidden = (viewModel?.board?.lists.count ?? 0) > 1 ? false : true
+
         return pageControl
     }()
     
@@ -47,9 +53,12 @@ public final class ListsViewController: UIViewController {
     
     private func setupViews() {
         configureViews(color: .systemBackground, collection: collectionView)
+        viewModel?.delegate = self
         configureBackButton()
         configurePageControl()
         configureTitleWith(string: (viewModel?.board!.title)!)
+        configureNewListButton()
+        viewModel?.getLists()
     }
     
     private func configurePageControl() {
@@ -57,16 +66,47 @@ public final class ListsViewController: UIViewController {
         addConstraints()
     }
     
+    private func updateViews() {
+        self.collectionView.reloadData()
+        
+        self.pageControl.numberOfPages = self.viewModel?.board?.lists.count ?? 0
+//        self.pageControl.numberOfPages = self.viewModel?.lists.count ?? 0
+        
+        self.pageControl.isHidden = (self.viewModel?.board?.lists.count ?? 0) > 1 ? false : true
+//        self.pageControl.isHidden = (self.viewModel?.lists.count ?? 0) > 1 ? false : true
+    }
+    
     private func addConstraints() {
         NSLayoutConstraint.activate([pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)])
+                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)])
+    }
+    
+    private func configureNewListButton() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addNewList))
+        navigationItem.rightBarButtonItem?.tintColor = .white
+    }
+    
+    @objc private func addNewList() {
+        let ac = UIAlertController(title: "Enter list title: ", message: nil, preferredStyle: .alert)
+            ac.addTextField()
+
+            let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
+                let answer = ac.textFields![0]
+                if !answer.text!.isEmpty {
+                    let newList = List(title: answer.text!, cards: [])
+                    self.viewModel?.addList(newList)
+                }
+            }
+
+            ac.addAction(submitAction)
+            present(ac, animated: true)
     }
 }
 
 // MARK: - CollectionView DataSource and Delegate
 extension ListsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel?.lists.count ?? 0
+        return viewModel?.board?.lists.count ?? 0
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -74,7 +114,7 @@ extension ListsViewController: UICollectionViewDataSource, UICollectionViewDeleg
             fatalError()
         }
         
-        let list = viewModel?.lists[indexPath.row]
+        let list = viewModel?.board?.lists[indexPath.row]
         cell.list = list
         return cell
     }
@@ -114,3 +154,11 @@ extension ListsViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+// MARK: - WorkSpaceViewModelDelegate
+extension ListsViewController: DataReloadDelegate {
+    func reload() {
+        DispatchQueue.main.async {
+            self.updateViews()
+        }
+    }
+}

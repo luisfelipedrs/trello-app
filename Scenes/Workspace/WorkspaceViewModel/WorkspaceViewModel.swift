@@ -7,13 +7,9 @@
 
 import Foundation
 
-protocol WorkspaceViewModelDelegate: AnyObject {
-    func reload()
-}
-
 public final class WorkspaceViewModel {
     
-    weak var delegate: WorkspaceViewModelDelegate?
+    weak var delegate: DataReloadDelegate?
     
     var boards: [Board] = [] {
         didSet {
