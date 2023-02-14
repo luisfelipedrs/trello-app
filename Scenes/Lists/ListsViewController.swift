@@ -14,9 +14,9 @@ public final class ListsViewController: UIViewController {
     private lazy var pageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.translatesAutoresizingMaskIntoConstraints = false
-        pageControl.numberOfPages = viewModel?.board?.lists.count ?? 0
+        pageControl.numberOfPages = viewModel?.board?.lists?.count ?? 0
         pageControl.backgroundStyle = .prominent
-        pageControl.isHidden = (viewModel?.board?.lists.count ?? 0) > 1 ? false : true
+        pageControl.isHidden = (viewModel?.board?.lists?.count ?? 0) > 1 ? false : true
         return pageControl
     }()
     
@@ -62,8 +62,8 @@ public final class ListsViewController: UIViewController {
     
     private func updateViews() {
         self.collectionView.reloadData()
-        self.pageControl.numberOfPages = self.viewModel?.board?.lists.count ?? 0
-        self.pageControl.isHidden = (self.viewModel?.board?.lists.count ?? 0) > 1 ? false : true
+        self.pageControl.numberOfPages = self.viewModel?.board?.lists?.count ?? 0
+        self.pageControl.isHidden = (self.viewModel?.board?.lists?.count ?? 0) > 1 ? false : true
     }
     
     private func addConstraints() {
@@ -96,7 +96,7 @@ public final class ListsViewController: UIViewController {
 // MARK: - CollectionView DataSource and Delegate
 extension ListsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel?.board?.lists.count ?? 0
+        return viewModel?.board?.lists?.count ?? 0
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -104,7 +104,7 @@ extension ListsViewController: UICollectionViewDataSource, UICollectionViewDeleg
             fatalError()
         }
         
-        let list = viewModel?.board?.lists[indexPath.row]
+        let list = viewModel?.board?.lists?[indexPath.row]
         cell.list = list
         cell.viewController = self
         return cell

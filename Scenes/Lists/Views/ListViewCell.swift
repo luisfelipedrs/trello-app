@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import MobileCoreServices
 
 public final class ListViewCell: UICollectionViewCell {
     
@@ -92,6 +93,9 @@ public final class ListViewCell: UICollectionViewCell {
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
+        tableView.dragInteractionEnabled = true
+        tableView.dragDelegate = self
+        tableView.dropDelegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -134,6 +138,80 @@ extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
 }
+
+// MARK: - UITableViewDragDelegate implementations
+extension ListViewCell: UITableViewDragDelegate {
+    public func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        guard let list = list, let listData = list.cards?[indexPath.row].title.data(using: .utf8) else {
+            return []
+        }
+        
+        let itemProvider = NSItemProvider(item: listData as NSData, typeIdentifier: kUTTypePlainText as String)
+        let dragItem = UIDragItem(itemProvider: itemProvider)
+        session.localContext = (list, indexPath, tableView)
+        
+        return [dragItem]
+    }
+}
+
+// MARK: - UITableViewDragDelegate implementations
+extension ListViewCell: UITableViewDropDelegate {
+    public func tableView(_ tableView: UITableView, performDropWith coordinator: UITableViewDropCoordinator) {
+        if coordinator.session.hasItemsConforming(toTypeIdentifiers: [kUTTypePlainText as String]) {
+            coordinator.session.loadObjects(ofClass: NSString.self) { (items) in
+                guard let string = items.first as? String else { return }
+                
+                var updatedIndexPaths = [IndexPath]()
+                
+                switch (coordinator.items.first?.sourceIndexPath, coordinator.destinationIndexPath) {
+                case (.some(let sourceIndexPath), .some(let destinationIndexPath)):
+                    if sourceIndexPath.row < destinationIndexPath.row {
+                        updatedIndexPaths = (sourceIndexPath.row...destinationIndexPath.row).map { IndexPath(row: $0, section: 0) }
+                    } else if sourceIndexPath.row > destinationIndexPath.row {
+                        updatedIndexPaths = (destinationIndexPath.row...sourceIndexPath.row).map { IndexPath(row: $0, section: 0)}
+                    }
+                    self.tableView.beginUpdates()
+                    self.list?.cards?.remove(at: sourceIndexPath.row)
+                    self.list?.cards?.insert(Card(title: string), at: destinationIndexPath.row)
+                    self.tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
+                    self.tableView.endUpdates()
+                    break
+                    
+                case (nil, .some(let destinationIndexPath)):
+                    self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
+                    self.tableView.beginUpdates()
+                    self.list?.cards?.insert(Card(title: string), at: destinationIndexPath.row)
+                    self.tableView.insertRows(at: [destinationIndexPath], with: .automatic)
+                    self.tableView.endUpdates()
+                    break
+                    
+                case (nil, nil):
+                    self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
+                    self.tableView.beginUpdates()
+                    self.list?.cards?.append(Card(title: string))
+                    self.tableView.insertRows(at: [IndexPath(row: (self.list!.cards?.count ?? 0) - 1, section: 0)], with: .automatic)
+                    self.tableView.endUpdates()
+                    
+                default: break
+                }
+            }
+        }
+    }
+    
+    public func removeSourceTableData(localContext: Any?) {
+        if let (dataSource, sourceIndexPath, tableView) = localContext as? (List, IndexPath, UITableView) {
+            tableView.beginUpdates()
+            dataSource.cards?.remove(at: sourceIndexPath.row)
+            tableView.deleteRows(at: [sourceIndexPath], with: .automatic)
+            tableView.endUpdates()
+        }
+    }
+    
+    public func tableView(_ tableView: UITableView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UITableViewDropProposal {
+        return UITableViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
+    }
+}
+
 
 // MARK: - CardTableView implementations
 fileprivate class CardViewCell: UITableViewCell {

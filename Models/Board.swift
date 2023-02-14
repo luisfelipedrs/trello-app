@@ -9,14 +9,14 @@ import Foundation
 
 class Board {
     var title: String
-    var lists: [List] = []
+    var lists: [List]?
     
-    init(title: String, lists: [List]) {
+    init(title: String, lists: [List]? = nil) {
         self.title = title
         self.lists = lists
     }
     
     func addList(_ list: List) {
-        self.lists.append(list)
+        self.lists?.append(list)
     }
 }
