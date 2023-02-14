@@ -52,18 +52,18 @@ public final class WorkspaceViewController: UIViewController {
     
     @objc private func addNewBoard() {
         let ac = UIAlertController(title: "Enter board title: ", message: nil, preferredStyle: .alert)
-            ac.addTextField()
-
-            let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
-                let answer = ac.textFields![0]
-                if !answer.text!.isEmpty {
-                    let newBoard = Board(title: answer.text!, lists: [])
-                    self.viewModel?.boards.append(newBoard)
-                }
+        ac.addTextField()
+        
+        let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
+            let answer = ac.textFields![0]
+            if !answer.text!.isEmpty {
+                let newBoard = Board(title: answer.text!, lists: [])
+                self.viewModel?.boards.append(newBoard)
             }
-
-            ac.addAction(submitAction)
-            present(ac, animated: true)
+        }
+        
+        ac.addAction(submitAction)
+        present(ac, animated: true)
     }
 }
 

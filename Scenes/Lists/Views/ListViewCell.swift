@@ -9,6 +9,8 @@ import UIKit
 
 public final class ListViewCell: UICollectionViewCell {
     
+    weak var viewController: UIViewController?
+    
     var list: List? {
         didSet {
             self.tableView.reloadData()
@@ -18,10 +20,10 @@ public final class ListViewCell: UICollectionViewCell {
     }
     
     private lazy var containerStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [listTitleLabel, tableView])
+        let stackView = UIStackView(arrangedSubviews: [listTitleLabel, tableView, button])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-        stackView.layoutMargins = UIEdgeInsets(top: 20, left: 20, bottom: 0, right: 20)
+        stackView.layoutMargins = UIEdgeInsets(top: 20, left: 20, bottom: 10, right: 20)
         stackView.isLayoutMarginsRelativeArrangement = true
         stackView.backgroundColor = .systemPurple
         return stackView
@@ -48,6 +50,39 @@ public final class ListViewCell: UICollectionViewCell {
         return tableView
     }()
     
+    private lazy var button: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        var config = UIButton.Configuration.filled()
+        config.cornerStyle = .capsule
+        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0)
+        config.baseForegroundColor = .white
+        config.baseBackgroundColor = .twilightPurple
+        config.attributedTitle = AttributedString("Add new card", attributes: AttributeContainer([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18, weight: .bold)]))
+        
+        button.addTarget(self, action: #selector(didTapNewCardButton), for: .touchUpInside)
+        
+        button.configuration = config
+        return button
+    }()
+    
+    @objc private func didTapNewCardButton() {
+        let ac = UIAlertController(title: "Enter card title: ", message: nil, preferredStyle: .alert)
+            ac.addTextField()
+
+        let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
+            let answer = ac.textFields![0]
+            if !answer.text!.isEmpty {
+                let newCard = Card(title: answer.text!)
+                self.list?.addCard(newCard)
+                self.tableView.reloadData()
+            }
+        }
+        
+        ac.addAction(submitAction)
+        viewController?.present(ac, animated: true)
+    }
     
 // MARK: - Cell Lyfe Cycle
     static var reuseId: String {
@@ -128,6 +163,7 @@ fileprivate class CardViewCell: UITableViewCell {
     private lazy var itemLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         return label
     }()
     

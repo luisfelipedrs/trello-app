@@ -14,15 +14,9 @@ public final class ListsViewController: UIViewController {
     private lazy var pageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.translatesAutoresizingMaskIntoConstraints = false
-        
-//        pageControl.numberOfPages = viewModel?.lists.count ?? 0
         pageControl.numberOfPages = viewModel?.board?.lists.count ?? 0
-
         pageControl.backgroundStyle = .prominent
-        
-//        pageControl.isHidden = (viewModel?.lists.count ?? 0) > 1 ? false : true
         pageControl.isHidden = (viewModel?.board?.lists.count ?? 0) > 1 ? false : true
-
         return pageControl
     }()
     
@@ -68,12 +62,8 @@ public final class ListsViewController: UIViewController {
     
     private func updateViews() {
         self.collectionView.reloadData()
-        
         self.pageControl.numberOfPages = self.viewModel?.board?.lists.count ?? 0
-//        self.pageControl.numberOfPages = self.viewModel?.lists.count ?? 0
-        
         self.pageControl.isHidden = (self.viewModel?.board?.lists.count ?? 0) > 1 ? false : true
-//        self.pageControl.isHidden = (self.viewModel?.lists.count ?? 0) > 1 ? false : true
     }
     
     private func addConstraints() {
@@ -88,18 +78,18 @@ public final class ListsViewController: UIViewController {
     
     @objc private func addNewList() {
         let ac = UIAlertController(title: "Enter list title: ", message: nil, preferredStyle: .alert)
-            ac.addTextField()
-
-            let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
-                let answer = ac.textFields![0]
-                if !answer.text!.isEmpty {
-                    let newList = List(title: answer.text!, cards: [])
-                    self.viewModel?.addList(newList)
-                }
+        ac.addTextField()
+        
+        let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
+            let answer = ac.textFields![0]
+            if !answer.text!.isEmpty {
+                let newList = List(title: answer.text!, cards: [])
+                self.viewModel?.addList(newList)
             }
-
-            ac.addAction(submitAction)
-            present(ac, animated: true)
+        }
+        
+        ac.addAction(submitAction)
+        present(ac, animated: true)
     }
 }
 
@@ -116,6 +106,7 @@ extension ListsViewController: UICollectionViewDataSource, UICollectionViewDeleg
         
         let list = viewModel?.board?.lists[indexPath.row]
         cell.list = list
+        cell.viewController = self
         return cell
     }
     
