@@ -122,7 +122,6 @@ public final class ListsViewController: UIViewController {
         
         let cell = gestureRecognizer.location(in: collectionView)
         if let indexPath = collectionView.indexPathForItem(at: cell) {
-            print("Long press at item: \(indexPath.row)")
             deleteList(at: indexPath.row)
         }
     }

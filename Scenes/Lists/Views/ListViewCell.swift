@@ -85,6 +85,39 @@ public final class ListViewCell: UICollectionViewCell {
         viewController?.present(ac, animated: true)
     }
     
+    @objc private func deleteCard(at index: Int) {
+        let ac = UIAlertController(title: "Delete card?", message: nil, preferredStyle: .alert)
+        
+        let confirm = UIAlertAction(title: "OK", style: .destructive) { _ in
+            self.list?.cards?.remove(at: index)
+            self.tableView.reloadData()
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .default)
+        
+        ac.addAction(cancel)
+        ac.addAction(confirm)
+        viewController?.present(ac, animated: true)
+    }
+    
+    private func setupLongGestureRecognizerOnCollection() {
+        let longPressedGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(gestureRecognizer:)))
+        longPressedGesture.minimumPressDuration = 0.5
+        longPressedGesture.delegate = self
+        longPressedGesture.delaysTouchesBegan = true
+        tableView.addGestureRecognizer(longPressedGesture)
+    }
+    
+    @objc private func handleLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
+        if (gestureRecognizer.state != .began) {
+            return
+        }
+        
+        let cell = gestureRecognizer.location(in: tableView)
+        if let indexPath = tableView.indexPathForRow(at: cell) {
+            deleteCard(at: indexPath.row)
+        }
+    }
+    
 // MARK: - Cell Lyfe Cycle
     static var reuseId: String {
         return String(describing: self)
@@ -105,6 +138,7 @@ public final class ListViewCell: UICollectionViewCell {
     private func setupView() {
         addSubview(containerStackView)
         addConstraints()
+        setupLongGestureRecognizerOnCollection()
         layer.cornerRadius = 5
         layer.masksToBounds = true
     }
@@ -122,6 +156,9 @@ public final class ListViewCell: UICollectionViewCell {
         ])
     }
 }
+
+// MARK: - UITableView Delegate and DataSource implementations
+extension ListViewCell: UIGestureRecognizerDelegate {}
 
 // MARK: - UITableView Delegate and DataSource implementations
 extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
