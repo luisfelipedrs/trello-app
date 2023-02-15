@@ -33,31 +33,62 @@ public final class WorkspaceViewController: UIViewController {
 
     public override func viewDidLoad() {
         super.viewDidLoad()
+        setupViews()
+    }
+    
+    private func setupViews() {
         applyTheme()
         configureViews(color: .systemBackground, collection: collectionView)
         configureBackButton()
+        configureNewBoardButton()
+        viewModel?.delegate = self
+        viewModel?.getBoards()
+    }
+    
+    private func configureNewBoardButton() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addNewBoard))
+        navigationItem.rightBarButtonItem?.tintColor = .white
+    }
+    
+    @objc private func addNewBoard() {
+        let ac = UIAlertController(title: "Enter board title: ", message: nil, preferredStyle: .alert)
+            ac.addTextField()
+
+            let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
+                let answer = ac.textFields![0]
+                if !answer.text!.isEmpty {
+                    let newBoard = Board(title: answer.text!, lists: [])
+                    self.viewModel?.boards.append(newBoard)
+                }
+            }
+
+            ac.addAction(submitAction)
+            present(ac, animated: true)
     }
 }
 
 // MARK: - CollectionView DataSource and Delegate
 extension WorkspaceViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        5
+        return viewModel?.boards.count ?? 0
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: WorkspaceViewCell.reuseId, for: indexPath) as? WorkspaceViewCell else {
             fatalError()
         }
-        
+        let board = viewModel?.boards[indexPath.row]
+        cell.board = board
         return cell
     }
     
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         
-        let boardViewController = BoardViewController()
-        navigationController?.pushViewController(boardViewController, animated: true)
+        let listsViewController = ListsViewController()
+        listsViewController.viewModel = ListViewModel()
+        listsViewController.viewModel?.board = viewModel?.boards[indexPath.row]
+        navigationController?.pushViewController(listsViewController, animated: true)
     }
 }
 
@@ -78,5 +109,14 @@ extension WorkspaceViewController: UICollectionViewDelegateFlowLayout {
         let itemWidth = utilArea / itemsPerLine
         
         return CGSize(width: itemWidth, height: itemWidth * cellProportion)
+    }
+}
+
+// MARK: - WorkSpaceViewModelDelegate
+extension WorkspaceViewController: DataReloadDelegate {
+    func reload() {
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
 }

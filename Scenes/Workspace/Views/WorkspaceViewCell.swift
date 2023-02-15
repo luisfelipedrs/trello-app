@@ -9,6 +9,13 @@ import UIKit
 
 public final class WorkspaceViewCell: UICollectionViewCell {
     
+    var board: Board? {
+        didSet {
+            guard let board = board else { return }
+            setupFor(board: board)
+        }
+    }
+    
     private lazy var containerStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [boardNameLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -24,7 +31,6 @@ public final class WorkspaceViewCell: UICollectionViewCell {
     
     private lazy var boardNameLabel: UILabel = {
         let label = UILabel()
-        label.text = "Nome do board"
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         return label
@@ -50,6 +56,10 @@ public final class WorkspaceViewCell: UICollectionViewCell {
         addSubview(containerStackView)
         setupGradient()
         addConstraints()
+    }
+    
+    private func setupFor(board: Board) {
+        boardNameLabel.text = board.title
     }
     
     private func setupGradient() {
