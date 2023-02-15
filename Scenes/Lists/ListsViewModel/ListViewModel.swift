@@ -7,9 +7,21 @@
 
 import Foundation
 
+protocol ListViewModelDelegate: AnyObject {
+    func loadBackgroundImage()
+}
+
 public final class ListViewModel {
     
     weak var delegate: DataReloadDelegate?
+    weak var viewModelDelegate: ListViewModelDelegate?
+    
+    var api: PhotoApi?
+    var backgroundImageUrl: URL? {
+        didSet {
+            self.viewModelDelegate?.loadBackgroundImage()
+        }
+    }
     
     var board: Board?
     
@@ -21,5 +33,18 @@ public final class ListViewModel {
     func addList(_ list: List) {
         self.board?.addList(list)
         self.delegate?.reload()
+    }
+    
+    func getBackgroudImageUrl() {
+        api?.getPhoto { [weak self] result in
+            
+            switch result {
+            case .success(let photo):
+                self?.backgroundImageUrl = photo.url
+                
+            case .failure(let error):
+                print("erro na api: \(error)")
+            }
+        }
     }
 }

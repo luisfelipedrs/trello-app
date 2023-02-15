@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 public final class ListsViewController: UIViewController {
     
@@ -39,6 +40,12 @@ public final class ListsViewController: UIViewController {
         collectionView.showsHorizontalScrollIndicator = false
         return collectionView
     }()
+    
+    private lazy var backgroundImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,12 +55,15 @@ public final class ListsViewController: UIViewController {
     private func setupViews() {
         configureViews(color: .systemBackground, collection: collectionView)
         viewModel?.delegate = self
+        viewModel?.viewModelDelegate = self
         configureBackButton()
         configurePageControl()
         configureTitleWith(string: (viewModel?.board!.title)!)
         configureNewListButton()
         viewModel?.getLists()
+        viewModel?.getBackgroudImageUrl()
         setupLongGestureRecognizerOnCollection()
+        collectionView.backgroundView = backgroundImage
     }
     
     private func configurePageControl() {
@@ -69,7 +79,8 @@ public final class ListsViewController: UIViewController {
     
     private func addConstraints() {
         NSLayoutConstraint.activate([pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)])
+                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+                                    ])
     }
     
     private func configureNewListButton() {
@@ -179,12 +190,19 @@ extension ListsViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-// MARK: - WorkSpaceViewModelDelegate
+// MARK: - DataReloadDelegate implementation
 extension ListsViewController: DataReloadDelegate {
     func reload() {
         DispatchQueue.main.async {
             self.updateViews()
         }
+    }
+}
+
+// MARK: - ViewModelDelegate implementations
+extension ListsViewController: ListViewModelDelegate {
+    func loadBackgroundImage() {
+        backgroundImage.setImageByDowloading(url: (viewModel?.backgroundImageUrl)!)
     }
 }
 

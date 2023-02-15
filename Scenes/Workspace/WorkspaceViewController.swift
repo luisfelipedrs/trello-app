@@ -121,6 +121,7 @@ extension WorkspaceViewController: UICollectionViewDelegate, UICollectionViewDat
         let listsViewController = ListsViewController()
         listsViewController.viewModel = ListViewModel()
         listsViewController.viewModel?.board = viewModel?.boards[indexPath.row]
+        listsViewController.viewModel?.api = PhotoApi()
         navigationController?.pushViewController(listsViewController, animated: true)
     }
 }

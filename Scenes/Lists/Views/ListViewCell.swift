@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import MobileCoreServices
+import UniformTypeIdentifiers
 
 public final class ListViewCell: UICollectionViewCell {
     
@@ -26,16 +26,16 @@ public final class ListViewCell: UICollectionViewCell {
         stackView.axis = .vertical
         stackView.layoutMargins = UIEdgeInsets(top: 20, left: 20, bottom: 10, right: 20)
         stackView.isLayoutMarginsRelativeArrangement = true
-        stackView.backgroundColor = .systemPurple
+        stackView.backgroundColor = .white.withAlphaComponent(0.7)
+        stackView.spacing = 16
         return stackView
     }()
     
     private lazy var listTitleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .white
+        label.textColor = .label
         label.font = UIFont.systemFont(ofSize: 22, weight: .bold)
         label.textAlignment = .center
-        label.backgroundColor = .pinkishPink
         label.layer.cornerRadius = 5
         label.layer.masksToBounds = true
         return label
@@ -45,9 +45,10 @@ public final class ListViewCell: UICollectionViewCell {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(CardViewCell.self, forCellReuseIdentifier: CardViewCell.reuseId)
-        tableView.backgroundColor = .systemPurple
+        tableView.backgroundColor = .clear
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.layer.cornerRadius = 5
         return tableView
     }()
     
@@ -56,7 +57,7 @@ public final class ListViewCell: UICollectionViewCell {
         button.translatesAutoresizingMaskIntoConstraints = false
         
         var config = UIButton.Configuration.filled()
-        config.cornerStyle = .capsule
+        config.cornerStyle = .small
         config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0)
         config.baseForegroundColor = .white
         config.baseBackgroundColor = .twilightPurple
@@ -118,7 +119,7 @@ public final class ListViewCell: UICollectionViewCell {
         }
     }
     
-// MARK: - Cell Lyfe Cycle
+// MARK: - ListViewCell Lyfe Cycle
     static var reuseId: String {
         return String(describing: self)
     }
@@ -183,7 +184,7 @@ extension ListViewCell: UITableViewDragDelegate {
             return []
         }
         
-        let itemProvider = NSItemProvider(item: listData as NSData, typeIdentifier: kUTTypePlainText as String)
+        let itemProvider = NSItemProvider(item: listData as NSData, typeIdentifier: UTType.utf8PlainText.identifier as String)
         let dragItem = UIDragItem(itemProvider: itemProvider)
         session.localContext = (list, indexPath, tableView)
         
@@ -191,10 +192,11 @@ extension ListViewCell: UITableViewDragDelegate {
     }
 }
 
-// MARK: - UITableViewDragDelegate implementations
+// MARK: - UITableViewDropDelegate implementations
 extension ListViewCell: UITableViewDropDelegate {
     public func tableView(_ tableView: UITableView, performDropWith coordinator: UITableViewDropCoordinator) {
-        if coordinator.session.hasItemsConforming(toTypeIdentifiers: [kUTTypePlainText as String]) {
+        if coordinator.session.hasItemsConforming(toTypeIdentifiers: [UTType.utf8PlainText.identifier
+ as String]) {
             coordinator.session.loadObjects(ofClass: NSString.self) { (items) in
                 guard let string = items.first as? String else { return }
                 
@@ -250,7 +252,7 @@ extension ListViewCell: UITableViewDropDelegate {
 }
 
 
-// MARK: - CardTableView implementations
+// MARK: - CardViewCell implementations
 fileprivate class CardViewCell: UITableViewCell {
     
     static var reuseId: String {
@@ -264,24 +266,23 @@ fileprivate class CardViewCell: UITableViewCell {
         }
     }
     
-    private lazy var containerStackView: UIStackView = {
+    private lazy var labelContainerStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [itemLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.layoutMargins = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 5)
         stackView.isLayoutMarginsRelativeArrangement = true
-        stackView.backgroundColor = .systemPurple
-        stackView.spacing = 10
         return stackView
     }()
     
     private lazy var itemLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .white
+        label.textColor = .secondaryLabel
         label.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         return label
     }()
     
+// MARK: - CardViewCell Lyfe Cycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupView()
@@ -296,16 +297,17 @@ fileprivate class CardViewCell: UITableViewCell {
     }
     
     private func setupView() {
-        addSubview(containerStackView)
+        addSubview(labelContainerStackView)
         addConstraints()
+        backgroundColor = .clear
     }
     
     private func addConstraints() {
         NSLayoutConstraint.activate([
-            containerStackView.topAnchor.constraint(equalTo: self.topAnchor),
-            containerStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            containerStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            containerStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            labelContainerStackView.topAnchor.constraint(equalTo: self.topAnchor),
+            labelContainerStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            labelContainerStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            labelContainerStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
         ])
     }
 }
