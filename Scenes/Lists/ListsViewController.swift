@@ -53,6 +53,7 @@ public final class ListsViewController: UIViewController {
         configureTitleWith(string: (viewModel?.board!.title)!)
         configureNewListButton()
         viewModel?.getLists()
+        setupLongGestureRecognizerOnCollection()
     }
     
     private func configurePageControl() {
@@ -90,6 +91,40 @@ public final class ListsViewController: UIViewController {
         
         ac.addAction(submitAction)
         present(ac, animated: true)
+    }
+    
+    @objc private func deleteList(at index: Int) {
+        let ac = UIAlertController(title: "Delete list?", message: nil, preferredStyle: .alert)
+        
+        let confirm = UIAlertAction(title: "OK", style: .destructive) { _ in
+            self.viewModel?.board?.lists?.remove(at: index)
+            self.updateViews()
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .default)
+        
+        ac.addAction(cancel)
+        ac.addAction(confirm)
+        present(ac, animated: true)
+    }
+    
+    private func setupLongGestureRecognizerOnCollection() {
+        let longPressedGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(gestureRecognizer:)))
+        longPressedGesture.minimumPressDuration = 0.5
+        longPressedGesture.delegate = self
+        longPressedGesture.delaysTouchesBegan = true
+        collectionView.addGestureRecognizer(longPressedGesture)
+    }
+    
+    @objc private func handleLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
+        if (gestureRecognizer.state != .began) {
+            return
+        }
+        
+        let cell = gestureRecognizer.location(in: collectionView)
+        if let indexPath = collectionView.indexPathForItem(at: cell) {
+            print("Long press at item: \(indexPath.row)")
+            deleteList(at: indexPath.row)
+        }
     }
 }
 
@@ -153,3 +188,6 @@ extension ListsViewController: DataReloadDelegate {
         }
     }
 }
+
+// MARK: - Gesture Recognizer
+extension ListsViewController: UIGestureRecognizerDelegate {}

@@ -43,6 +43,7 @@ public final class WorkspaceViewController: UIViewController {
         configureNewBoardButton()
         viewModel?.delegate = self
         viewModel?.getBoards()
+        setupLongGestureRecognizerOnCollection()
     }
     
     private func configureNewBoardButton() {
@@ -64,6 +65,38 @@ public final class WorkspaceViewController: UIViewController {
         
         ac.addAction(submitAction)
         present(ac, animated: true)
+    }
+    
+    @objc private func deleteBoard(at index: Int) {
+        let ac = UIAlertController(title: "Delete board?", message: nil, preferredStyle: .alert)
+        
+        let confirm = UIAlertAction(title: "OK", style: .destructive) { _ in
+            self.viewModel?.boards.remove(at: index)
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .default)
+        
+        ac.addAction(cancel)
+        ac.addAction(confirm)
+        present(ac, animated: true)
+    }
+    
+    private func setupLongGestureRecognizerOnCollection() {
+        let longPressedGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(gestureRecognizer:)))
+        longPressedGesture.minimumPressDuration = 0.5
+        longPressedGesture.delegate = self
+        longPressedGesture.delaysTouchesBegan = true
+        collectionView.addGestureRecognizer(longPressedGesture)
+    }
+    
+    @objc private func handleLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
+        if (gestureRecognizer.state != .began) {
+            return
+        }
+        
+        let cell = gestureRecognizer.location(in: collectionView)
+        if let indexPath = collectionView.indexPathForItem(at: cell) {
+            deleteBoard(at: indexPath.row)
+        }
     }
 }
 
@@ -120,3 +153,6 @@ extension WorkspaceViewController: DataReloadDelegate {
         }
     }
 }
+
+// MARK: - Gesture Recognizer
+extension WorkspaceViewController: UIGestureRecognizerDelegate {}

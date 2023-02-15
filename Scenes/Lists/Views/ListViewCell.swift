@@ -33,7 +33,7 @@ public final class ListViewCell: UICollectionViewCell {
     private lazy var listTitleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.font = UIFont.systemFont(ofSize: 22, weight: .bold)
         label.textAlignment = .center
         label.backgroundColor = .pinkishPink
         label.layer.cornerRadius = 5
@@ -241,7 +241,7 @@ fileprivate class CardViewCell: UITableViewCell {
     private lazy var itemLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         return label
     }()
     
