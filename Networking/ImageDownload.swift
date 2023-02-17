@@ -63,7 +63,6 @@ class ImageDownload {
                     let response = CachedURLResponse(response: response, data: data)
                     
                     self?.cache.storeCachedResponse(response, for: request)
-                    debugPrint("Cached response for \(request.url!.absoluteURL)")
                 }
                 
                 guard let loadedImage = UIImage(data: data) else {

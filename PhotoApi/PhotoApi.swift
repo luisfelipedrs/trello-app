@@ -18,7 +18,7 @@ public class PhotoApi {
     func getPhoto(completionHandler: @escaping (PhotoApi.Result<ApiResponse>) -> Void,
                   completeOn completionQueue: DispatchQueue = .main) {
         
-        httpRequest.execute { (result: HTTPResult<ApiResponse>) in
+        httpRequest.execute(photoDate: String(Int.random(in: 1...30))) { (result: HTTPResult<ApiResponse>) in
             
             switch result {
             case .success(let photo):

@@ -17,11 +17,6 @@ public final class ListViewModel {
     weak var viewModelDelegate: ListViewModelDelegate?
     
     var api: PhotoApi?
-    var backgroundImageUrl: URL? {
-        didSet {
-            self.viewModelDelegate?.loadBackgroundImage()
-        }
-    }
     
     var board: Board?
     
@@ -36,15 +31,24 @@ public final class ListViewModel {
     }
     
     func getBackgroudImageUrl() {
-        api?.getPhoto { [weak self] result in
-            
-            switch result {
-            case .success(let photo):
-                self?.backgroundImageUrl = photo.url
+        if board?.backgroundImageUrl == nil {
+            api?.getPhoto { [weak self] result in
                 
-            case .failure(let error):
-                print("erro na api: \(error)")
+                switch result {
+                case .success(let photo):
+                    if photo.media_type == "image" {
+                        self?.board?.backgroundImageUrl = photo.url
+                        self?.viewModelDelegate?.loadBackgroundImage()
+                    } else {
+                        self?.getBackgroudImageUrl()
+                    }
+                    
+                case .failure(let error):
+                    print("erro na api: \(error)")
+                }
             }
+        } else {
+            self.viewModelDelegate?.loadBackgroundImage()
         }
     }
 }

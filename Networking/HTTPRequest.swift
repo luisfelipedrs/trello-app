@@ -7,9 +7,9 @@
 
 import Foundation
 
-class HTTPRequest {
+public final class HTTPRequest {
     
-    private let urlString: String = "https://api.nasa.gov/planetary/apod?api_key=11eo3Fq4MYriV9fpIX8xyPesobNoV4hwRtrjPxIp"
+    private let urlTemplate: String = "https://api.nasa.gov/planetary/apod?api_key=11eo3Fq4MYriV9fpIX8xyPesobNoV4hwRtrjPxIp&date=2014-10-%@"
     
     private let session: URLSession
     private var dataTask: URLSessionDataTask?
@@ -18,7 +18,8 @@ class HTTPRequest {
         self.session = session
     }
     
-    func execute<T: Codable>(method httpMethod: HTTPMethod = .get,
+    func execute<T: Codable>(photoDate: String,
+                             method httpMethod: HTTPMethod = .get,
                              body encodable: Encodable? = nil,
                              headers httpHeaders: HTTPHeaders? = nil,
                              decoder: JSONDecoder = .init(),
@@ -27,8 +28,8 @@ class HTTPRequest {
         
         dataTask?.cancel()
         
-//        let urlString = String(format: urlTemplate, resource)
-        
+        let urlString = String(format: urlTemplate, photoDate)
+                                
         guard let url = URL(string: urlString) else {
             preconditionFailure("Unable to create URL.")
         }

@@ -7,6 +7,7 @@
 
 import Foundation
 
-struct ApiResponse: Codable {
+public struct ApiResponse: Codable {
     let url: URL
+    let media_type: String
 }

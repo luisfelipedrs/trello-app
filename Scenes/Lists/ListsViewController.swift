@@ -79,8 +79,7 @@ public final class ListsViewController: UIViewController {
     
     private func addConstraints() {
         NSLayoutConstraint.activate([pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-                                    ])
+                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)])
     }
     
     private func configureNewListButton() {
@@ -193,16 +192,14 @@ extension ListsViewController: UICollectionViewDelegateFlowLayout {
 // MARK: - DataReloadDelegate implementation
 extension ListsViewController: DataReloadDelegate {
     func reload() {
-        DispatchQueue.main.async {
-            self.updateViews()
-        }
+        updateViews()
     }
 }
 
 // MARK: - ViewModelDelegate implementations
 extension ListsViewController: ListViewModelDelegate {
     func loadBackgroundImage() {
-        backgroundImage.setImageByDowloading(url: (viewModel?.backgroundImageUrl)!)
+        backgroundImage.setImageByDowloading(url: (viewModel?.board?.backgroundImageUrl)!)
     }
 }
 

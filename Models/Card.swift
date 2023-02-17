@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Card {
+public final class Card {
     var title: String
     
     init(title: String) {

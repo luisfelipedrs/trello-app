@@ -14,7 +14,6 @@ public final class ListViewCell: UICollectionViewCell {
     
     var list: List? {
         didSet {
-            self.tableView.reloadData()
             guard let list = list else { return }
             setupFor(list: list)
         }
@@ -35,7 +34,7 @@ public final class ListViewCell: UICollectionViewCell {
         let label = UILabel()
         label.textColor = .label
         label.font = UIFont.systemFont(ofSize: 22, weight: .bold)
-        label.textAlignment = .center
+        label.textAlignment = .left
         label.layer.cornerRadius = 5
         label.layer.masksToBounds = true
         return label
@@ -124,6 +123,8 @@ public final class ListViewCell: UICollectionViewCell {
         return String(describing: self)
     }
     
+    let cellSpacingHeight: CGFloat = 5
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -166,7 +167,7 @@ extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return list?.cards?.count ?? 0
     }
-    
+
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CardViewCell.reuseId, for: indexPath) as? CardViewCell else {
             fatalError()
@@ -174,6 +175,10 @@ extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
         let card = list?.cards?[indexPath.row]
         cell.card = card
         return cell
+    }
+
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }
 
@@ -279,6 +284,7 @@ fileprivate class CardViewCell: UITableViewCell {
         let label = UILabel()
         label.textColor = .secondaryLabel
         label.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        label.numberOfLines = 0
         return label
     }()
     
