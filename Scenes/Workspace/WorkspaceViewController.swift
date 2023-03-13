@@ -43,6 +43,7 @@ public final class WorkspaceViewController: UIViewController {
         configureNewBoardButton()
         viewModel?.delegate = self
         viewModel?.getBoards()
+        setupLongGestureRecognizerOnCollection()
     }
     
     private func configureNewBoardButton() {
@@ -52,18 +53,50 @@ public final class WorkspaceViewController: UIViewController {
     
     @objc private func addNewBoard() {
         let ac = UIAlertController(title: "Enter board title: ", message: nil, preferredStyle: .alert)
-            ac.addTextField()
-
-            let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
-                let answer = ac.textFields![0]
-                if !answer.text!.isEmpty {
-                    let newBoard = Board(title: answer.text!, lists: [])
-                    self.viewModel?.boards.append(newBoard)
-                }
+        ac.addTextField()
+        
+        let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
+            let answer = ac.textFields![0]
+            if !answer.text!.isEmpty {
+                let newBoard = Board(title: answer.text!, lists: [])
+                self.viewModel?.boards.append(newBoard)
             }
-
-            ac.addAction(submitAction)
-            present(ac, animated: true)
+        }
+        
+        ac.addAction(submitAction)
+        present(ac, animated: true)
+    }
+    
+    @objc private func deleteBoard(at index: Int) {
+        let ac = UIAlertController(title: "Delete board?", message: nil, preferredStyle: .alert)
+        
+        let confirm = UIAlertAction(title: "OK", style: .destructive) { _ in
+            self.viewModel?.boards.remove(at: index)
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .default)
+        
+        ac.addAction(cancel)
+        ac.addAction(confirm)
+        present(ac, animated: true)
+    }
+    
+    private func setupLongGestureRecognizerOnCollection() {
+        let longPressedGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(gestureRecognizer:)))
+        longPressedGesture.minimumPressDuration = 0.5
+        longPressedGesture.delegate = self
+        longPressedGesture.delaysTouchesBegan = true
+        collectionView.addGestureRecognizer(longPressedGesture)
+    }
+    
+    @objc private func handleLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
+        if (gestureRecognizer.state != .began) {
+            return
+        }
+        
+        let cell = gestureRecognizer.location(in: collectionView)
+        if let indexPath = collectionView.indexPathForItem(at: cell) {
+            deleteBoard(at: indexPath.row)
+        }
     }
 }
 
@@ -88,6 +121,7 @@ extension WorkspaceViewController: UICollectionViewDelegate, UICollectionViewDat
         let listsViewController = ListsViewController()
         listsViewController.viewModel = ListViewModel()
         listsViewController.viewModel?.board = viewModel?.boards[indexPath.row]
+        listsViewController.viewModel?.api = PhotoApi()
         navigationController?.pushViewController(listsViewController, animated: true)
     }
 }
@@ -120,3 +154,6 @@ extension WorkspaceViewController: DataReloadDelegate {
         }
     }
 }
+
+// MARK: - Gesture Recognizer
+extension WorkspaceViewController: UIGestureRecognizerDelegate {}

@@ -7,16 +7,18 @@
 
 import Foundation
 
-class Board {
+public final class Board {
     var title: String
-    var lists: [List] = []
+    var lists: [List]?
+    var backgroundImageUrl: URL?
     
-    init(title: String, lists: [List]) {
+    init(title: String, lists: [List]? = nil, backgroundImageUrl: URL? = nil) {
         self.title = title
         self.lists = lists
+        self.backgroundImageUrl = backgroundImageUrl
     }
     
     func addList(_ list: List) {
-        self.lists.append(list)
+        self.lists?.append(list)
     }
 }
