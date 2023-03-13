@@ -13,6 +13,5 @@ class SearchViewController: UIViewController {
         super.viewDidLoad()
 
         applyTheme()
-        configureViews(color: .systemBackground)
     }
 }

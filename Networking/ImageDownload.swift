@@ -34,8 +34,11 @@ class ImageDownload {
                     )
                 }
                 
+                debugPrint("cache hit for \(request.url!.absoluteURL)")
                 return
             }
+            
+            debugPrint("cache miss for \(request.url!.absoluteURL)")
                         
             self.session.dataTask(with: request) { [weak self] data, response, error in
                 if let error = error {
@@ -63,6 +66,7 @@ class ImageDownload {
                     let response = CachedURLResponse(response: response, data: data)
                     
                     self?.cache.storeCachedResponse(response, for: request)
+                    debugPrint("cached response for \(request.url!.absoluteURL)")
                 }
                 
                 guard let loadedImage = UIImage(data: data) else {

@@ -22,7 +22,7 @@ extension UIImageView {
 
             guard let loadedImage = loadedImage,
                   let downloadMetada = downloadMetada else {
-                debugPrint("Could not possible to load the image")
+                debugPrint("It was not possible to load the image")
                 return
             }
                 

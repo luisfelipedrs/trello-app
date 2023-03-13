@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Kingfisher
 
 public final class ListsViewController: UIViewController {
     
@@ -38,14 +37,30 @@ public final class ListsViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.showsHorizontalScrollIndicator = false
+        collectionView.backgroundColor = .clear
         return collectionView
     }()
     
     private lazy var backgroundImage: UIImageView = {
         let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFill
         return imageView
     }()
+    
+    private lazy var alphaLayer: UIView = {
+        let alphaLayer = UIView()
+        alphaLayer.translatesAutoresizingMaskIntoConstraints = false
+        alphaLayer.backgroundColor = .white.withAlphaComponent(0.5)
+        return alphaLayer
+    }()
+    
+//    private lazy var alphaLayer: CALayer = {
+//        let alphaLayer = CALayer()
+//        alphaLayer.frame = backgroundImage.frame
+//        alphaLayer.backgroundColor = UIColor.white.withAlphaComponent(0.5).cgColor
+//        return alphaLayer
+//    }()
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,11 +68,13 @@ public final class ListsViewController: UIViewController {
     }
     
     private func setupViews() {
-        configureViews(color: .systemBackground, collection: collectionView)
+//        configureViews(view: backgroundImage)
+//        configureViews(view: alphaLayer)
+        view.addSubview(collectionView)
+        view.addSubview(pageControl)
+        view.backgroundColor = .systemBackground
+        addConstraints()
         viewModel?.delegate = self
-        viewModel?.viewModelDelegate = self
-        configureBackButton()
-        configurePageControl()
         configureTitleWith(string: (viewModel?.board!.title)!)
         configureNewListButton()
         viewModel?.getLists()
@@ -66,20 +83,10 @@ public final class ListsViewController: UIViewController {
         collectionView.backgroundView = backgroundImage
     }
     
-    private func configurePageControl() {
-        view.addSubview(pageControl)
-        addConstraints()
-    }
-    
     private func updateViews() {
-        self.collectionView.reloadData()
         self.pageControl.numberOfPages = self.viewModel?.board?.lists?.count ?? 0
         self.pageControl.isHidden = (self.viewModel?.board?.lists?.count ?? 0) > 1 ? false : true
-    }
-    
-    private func addConstraints() {
-        NSLayoutConstraint.activate([pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)])
+        self.collectionView.reloadData()
     }
     
     private func configureNewListButton() {
@@ -135,6 +142,30 @@ public final class ListsViewController: UIViewController {
             deleteList(at: indexPath.row)
         }
     }
+    
+    private func configureTitleWith(string: String) {
+        let titleLabel = UILabel()
+        titleLabel.text = string
+        titleLabel.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
+        
+        let titleView = UIView(frame: CGRect(x: 0, y: 0, width: 250, height: 44))
+        titleLabel.frame = titleView.frame
+        titleView.addSubview(titleLabel)
+        
+        navigationItem.titleView = titleView
+    }
+    
+    private func addConstraints() {
+        NSLayoutConstraint.activate([pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                                     pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+                                     
+                                     collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                                     collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                                     collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                                     collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)])
+    }
 }
 
 // MARK: - CollectionView DataSource and Delegate
@@ -189,17 +220,14 @@ extension ListsViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-// MARK: - DataReloadDelegate implementation
-extension ListsViewController: DataReloadDelegate {
-    func reload() {
-        updateViews()
-    }
-}
-
 // MARK: - ViewModelDelegate implementations
 extension ListsViewController: ListViewModelDelegate {
     func loadBackgroundImage() {
         backgroundImage.setImageByDowloading(url: (viewModel?.board?.backgroundImageUrl)!)
+    }
+    
+    func reload() {
+        updateViews()
     }
 }
 

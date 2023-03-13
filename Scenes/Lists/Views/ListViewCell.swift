@@ -14,10 +14,22 @@ public final class ListViewCell: UICollectionViewCell {
     
     var list: List? {
         didSet {
+            self.tableView.reloadData()
             guard let list = list else { return }
             setupFor(list: list)
         }
     }
+    
+    private lazy var masterContainerStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [containerStackView, paddingView])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.layoutMargins = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.backgroundColor = .clear
+        stackView.distribution = .fill
+        return stackView
+    }()
     
     private lazy var containerStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [listTitleLabel, tableView, button])
@@ -28,6 +40,12 @@ public final class ListViewCell: UICollectionViewCell {
         stackView.backgroundColor = .white.withAlphaComponent(0.7)
         stackView.spacing = 16
         return stackView
+    }()
+    
+    private lazy var paddingView: UIView = {
+        let paddingView = UIView()
+        paddingView.backgroundColor = .clear
+        return paddingView
     }()
     
     private lazy var listTitleLabel: UILabel = {
@@ -123,7 +141,7 @@ public final class ListViewCell: UICollectionViewCell {
         return String(describing: self)
     }
     
-    let cellSpacingHeight: CGFloat = 5
+//    let cellSpacingHeight: CGFloat = 5
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -138,7 +156,7 @@ public final class ListViewCell: UICollectionViewCell {
     }
     
     private func setupView() {
-        addSubview(containerStackView)
+        addSubview(masterContainerStackView)
         addConstraints()
         setupLongGestureRecognizerOnCollection()
         layer.cornerRadius = 5
@@ -151,10 +169,10 @@ public final class ListViewCell: UICollectionViewCell {
     
     private func addConstraints() {
         NSLayoutConstraint.activate([
-            containerStackView.topAnchor.constraint(equalTo: self.topAnchor),
-            containerStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            containerStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            containerStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            masterContainerStackView.topAnchor.constraint(equalTo: self.topAnchor),
+            masterContainerStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            masterContainerStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            masterContainerStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
         ])
     }
 }
@@ -164,6 +182,47 @@ extension ListViewCell: UIGestureRecognizerDelegate {}
 
 // MARK: - UITableView Delegate and DataSource implementations
 extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
+//    public func numberOfSections(in tableView: UITableView) -> Int {
+//        return list?.cards?.count ?? 0
+//    }
+//
+//    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        return 1
+//    }
+//
+//    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        guard let cell = tableView.dequeueReusableCell(withIdentifier: CardViewCell.reuseId, for: indexPath) as? CardViewCell else {
+//            fatalError()
+//        }
+//
+//        let card = list?.cards?[indexPath.section]
+//        cell.card = card
+//
+//        cell.backgroundColor = UIColor.white
+//        cell.layer.borderColor = UIColor.black.cgColor
+//        cell.layer.borderWidth = 1
+//        cell.layer.cornerRadius = 8
+//        cell.clipsToBounds = true
+//
+//        return cell
+//    }
+//
+//    public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        let headerView = UIView()
+//        headerView.backgroundColor = UIColor.red
+//        return headerView
+//    }
+//
+//    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+//        return cellSpacingHeight
+//    }
+//
+//    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        tableView.deselectRow(at: indexPath, animated: true)
+//    }
+    
+    // divisao
+    
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return list?.cards?.count ?? 0
     }

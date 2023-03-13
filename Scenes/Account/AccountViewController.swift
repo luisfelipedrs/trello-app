@@ -13,6 +13,5 @@ class AccountViewController: UIViewController {
         super.viewDidLoad()
 
         applyTheme()
-        configureViews(color: .systemBackground)
     }
 }

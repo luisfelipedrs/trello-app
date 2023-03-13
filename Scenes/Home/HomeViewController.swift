@@ -13,6 +13,6 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
 
         applyTheme()
-        configureViews(color: .systemBackground)
+        view.backgroundColor = .systemBackground
     }
 }

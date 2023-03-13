@@ -38,9 +38,11 @@ public final class WorkspaceViewController: UIViewController {
     
     private func setupViews() {
         applyTheme()
-        configureViews(color: .systemBackground, collection: collectionView)
-        configureBackButton()
+        view.addSubview(collectionView)
+        view.backgroundColor = .systemBackground
+        addConstraints()
         configureNewBoardButton()
+        configureBackButton()
         viewModel?.delegate = self
         viewModel?.getBoards()
         setupLongGestureRecognizerOnCollection()
@@ -98,6 +100,18 @@ public final class WorkspaceViewController: UIViewController {
             deleteBoard(at: indexPath.row)
         }
     }
+    
+    private func configureBackButton() {
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.backBarButtonItem?.tintColor = .white
+    }
+    
+    private func addConstraints() {
+        NSLayoutConstraint.activate([collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                                     collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                                     collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                                     collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)])
+    }
 }
 
 // MARK: - CollectionView DataSource and Delegate
@@ -147,7 +161,7 @@ extension WorkspaceViewController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK: - WorkSpaceViewModelDelegate
-extension WorkspaceViewController: DataReloadDelegate {
+extension WorkspaceViewController: WorkspaceViewModelDelegate {
     func reload() {
         DispatchQueue.main.async {
             self.collectionView.reloadData()

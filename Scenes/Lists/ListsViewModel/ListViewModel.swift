@@ -9,12 +9,12 @@ import Foundation
 
 protocol ListViewModelDelegate: AnyObject {
     func loadBackgroundImage()
+    func reload()
 }
 
 public final class ListViewModel {
     
-    weak var delegate: DataReloadDelegate?
-    weak var viewModelDelegate: ListViewModelDelegate?
+    weak var delegate: ListViewModelDelegate?
     
     var api: PhotoApi?
     
@@ -38,7 +38,7 @@ public final class ListViewModel {
                 case .success(let photo):
                     if photo.media_type == "image" {
                         self?.board?.backgroundImageUrl = photo.url
-                        self?.viewModelDelegate?.loadBackgroundImage()
+                        self?.delegate?.loadBackgroundImage()
                     } else {
                         self?.getBackgroudImageUrl()
                     }
@@ -48,7 +48,7 @@ public final class ListViewModel {
                 }
             }
         } else {
-            self.viewModelDelegate?.loadBackgroundImage()
+            self.delegate?.loadBackgroundImage()
         }
     }
 }
