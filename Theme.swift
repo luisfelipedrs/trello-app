@@ -14,10 +14,10 @@ protocol ThemeConfigurable: UIViewController {
 extension ThemeConfigurable {
 
     func applyTheme() {
-        setupNavigationBar()
+        setupTheme()
     }
 
-    private func setupNavigationBar() {
+    private func setupTheme() {
         let logoImageView = UIImageView(image: .init(named: "Logo"))
         logoImageView.tintColor = .white
         logoImageView.contentMode = .scaleAspectFit
@@ -34,10 +34,10 @@ extension UIViewController: ThemeConfigurable {}
 extension ThemeConfigurable where Self == UINavigationController {
 
     func applyTheme() {
-        setupNavigationBar()
+        setupTheme()
     }
 
-    private func setupNavigationBar() {
+    private func setupTheme() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor.systemBlue

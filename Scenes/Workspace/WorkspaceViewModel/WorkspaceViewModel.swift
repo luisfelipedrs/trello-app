@@ -15,13 +15,13 @@ public final class WorkspaceViewModel {
     
     weak var delegate: WorkspaceViewModelDelegate?
     
-    var boards: [Board] = [] {
+    var boards: [TrelloBoard] = [] {
         didSet {
             self.delegate?.reload()
         }
     }
     
-    public func getBoards() {
-        boards = MockApi.getBoads()
-    }
+//    public func getBoards() {
+//        boards = MockApi.getBoads()
+//    }
 }

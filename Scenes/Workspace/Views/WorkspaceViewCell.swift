@@ -9,7 +9,7 @@ import UIKit
 
 public final class WorkspaceViewCell: UICollectionViewCell {
     
-    var board: Board? {
+    var board: TrelloBoard? {
         didSet {
             guard let board = board else { return }
             setupFor(board: board)
@@ -58,7 +58,7 @@ public final class WorkspaceViewCell: UICollectionViewCell {
         addConstraints()
     }
     
-    private func setupFor(board: Board) {
+    private func setupFor(board: TrelloBoard) {
         boardNameLabel.text = board.title
     }
     

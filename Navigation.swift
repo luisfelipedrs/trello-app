@@ -27,8 +27,12 @@ protocol ControllerFactory {
 
 final class WorkspaceNavigationFactory: ControllerFactory {
     func build() -> UIViewController {
+        
         let workspaceViewController = WorkspaceViewController()
         workspaceViewController.viewModel = WorkspaceViewModel()
+        
+//        let managedContext = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext
+//        workspaceViewController.context = managedContext
         
         return UINavigationController(with: workspaceViewController, thematic: true)
     }

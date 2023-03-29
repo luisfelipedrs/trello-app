@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 public final class WorkspaceViewController: UIViewController {
     
@@ -34,6 +35,7 @@ public final class WorkspaceViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
+        viewModel?.boards = DataManager.shared.boards()
     }
     
     private func setupViews() {
@@ -44,7 +46,6 @@ public final class WorkspaceViewController: UIViewController {
         configureNewBoardButton()
         configureBackButton()
         viewModel?.delegate = self
-        viewModel?.getBoards()
         setupLongGestureRecognizerOnCollection()
     }
     
@@ -54,32 +55,48 @@ public final class WorkspaceViewController: UIViewController {
     }
     
     @objc private func addNewBoard() {
-        let ac = UIAlertController(title: "Enter board title: ", message: nil, preferredStyle: .alert)
-        ac.addTextField()
+        var textField = UITextField()
         
-        let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
-            let answer = ac.textFields![0]
-            if !answer.text!.isEmpty {
-                let newBoard = Board(title: answer.text!, lists: [])
-                self.viewModel?.boards.append(newBoard)
-            }
+        let alert = UIAlertController(title: "Enter new board", message: "", preferredStyle: .alert)
+        let createAction = UIAlertAction(title: "Create", style: .default) { (action) in
+            let board = DataManager.shared.board(title: textField.text ?? "board padrao")
+            self.viewModel?.boards.append(board)
+            DataManager.shared.save()
+            self.reload()
         }
         
-        ac.addAction(submitAction)
-        present(ac, animated: true)
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Ex: Board 1"
+            textField = alertTextField
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive) { (action) in
+            self.dismiss(animated: true)
+        }
+        
+        alert.addAction(createAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
     }
     
-    @objc private func deleteBoard(at index: Int) {
-        let ac = UIAlertController(title: "Delete board?", message: nil, preferredStyle: .alert)
-        
-        let confirm = UIAlertAction(title: "OK", style: .destructive) { _ in
-            self.viewModel?.boards.remove(at: index)
+    @objc private func deleteBoard(at indexPath: IndexPath) {
+        guard let board = viewModel?.boards[indexPath.row] else {
+            fatalError()
         }
-        let cancel = UIAlertAction(title: "Cancel", style: .default)
+        let areYouSureAlert = UIAlertController(title: "Are you sure you want to delete this board?", message: "", preferredStyle: .alert)
+        let yesDeleteAction = UIAlertAction(title: "Yes", style: .destructive) { [self] (action) in
+            DataManager.shared.deleteBoard(board: board)
+            viewModel?.boards.remove(at: indexPath.row)
+            collectionView.deleteItems(at: [indexPath])
+            self.reload()
+        }
         
-        ac.addAction(cancel)
-        ac.addAction(confirm)
-        present(ac, animated: true)
+        let noDeleteAction = UIAlertAction(title: "No", style: .default) { (action) in
+        }
+        
+        areYouSureAlert.addAction(noDeleteAction)
+        areYouSureAlert.addAction(yesDeleteAction)
+        self.present(areYouSureAlert, animated: true)
     }
     
     private func setupLongGestureRecognizerOnCollection() {
@@ -97,7 +114,7 @@ public final class WorkspaceViewController: UIViewController {
         
         let cell = gestureRecognizer.location(in: collectionView)
         if let indexPath = collectionView.indexPathForItem(at: cell) {
-            deleteBoard(at: indexPath.row)
+            deleteBoard(at: indexPath)
         }
     }
     
@@ -134,8 +151,8 @@ extension WorkspaceViewController: UICollectionViewDelegate, UICollectionViewDat
         
         let listsViewController = ListsViewController()
         listsViewController.viewModel = ListViewModel()
-        listsViewController.viewModel?.board = viewModel?.boards[indexPath.row]
         listsViewController.viewModel?.api = PhotoApi()
+        listsViewController.viewModel?.board = viewModel?.boards[indexPath.row]
         navigationController?.pushViewController(listsViewController, animated: true)
     }
 }

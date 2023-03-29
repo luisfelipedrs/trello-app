@@ -7,12 +7,12 @@
 
 import UIKit
 import UniformTypeIdentifiers
+import CoreData
 
 public final class ListViewCell: UICollectionViewCell {
     
     weak var viewController: UIViewController?
-    
-    var list: List? {
+    var list: TrelloList? {
         didSet {
             self.tableView.reloadData()
             guard let list = list else { return }
@@ -80,41 +80,54 @@ public final class ListViewCell: UICollectionViewCell {
         config.baseBackgroundColor = .twilightPurple
         config.attributedTitle = AttributedString("Add new card", attributes: AttributeContainer([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18, weight: .bold)]))
         
-        button.addTarget(self, action: #selector(didTapNewCardButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(addNewCard), for: .touchUpInside)
         
         button.configuration = config
         return button
     }()
     
-    @objc private func didTapNewCardButton() {
-        let ac = UIAlertController(title: "Enter card title: ", message: nil, preferredStyle: .alert)
-            ac.addTextField()
-
-        let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
-            let answer = ac.textFields![0]
-            if !answer.text!.isEmpty {
-                let newCard = Card(title: answer.text!)
-                self.list?.addCard(newCard)
-                self.tableView.reloadData()
-            }
-        }
+    @objc private func addNewCard() {
+        var textField = UITextField()
         
-        ac.addAction(submitAction)
-        viewController?.present(ac, animated: true)
-    }
-    
-    @objc private func deleteCard(at index: Int) {
-        let ac = UIAlertController(title: "Delete card?", message: nil, preferredStyle: .alert)
-        
-        let confirm = UIAlertAction(title: "OK", style: .destructive) { _ in
-            self.list?.cards?.remove(at: index)
+        let alert = UIAlertController(title: "Enter new card", message: "", preferredStyle: .alert)
+        let createAction = UIAlertAction(title: "Create", style: .default) { (action) in
+            let card = DataManager.shared.card(title: textField.text ?? "card padrao", list: self.list!)
+            self.list?.addToTrelloCard(card)
+            DataManager.shared.save()
             self.tableView.reloadData()
         }
-        let cancel = UIAlertAction(title: "Cancel", style: .default)
         
-        ac.addAction(cancel)
-        ac.addAction(confirm)
-        viewController?.present(ac, animated: true)
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Ex: Card 1"
+            textField = alertTextField
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive) { (action) in
+            self.viewController?.dismiss(animated: true)
+        }
+        
+        alert.addAction(createAction)
+        alert.addAction(cancelAction)
+        viewController?.present(alert, animated: true)
+    }
+    
+    @objc private func deleteCard(at indexPath: IndexPath) {
+        guard let card = list?.trelloCard?[indexPath.row] else {
+            fatalError()
+        }
+        let areYouSureAlert = UIAlertController(title: "Are you sure you want to delete this card?", message: "", preferredStyle: .alert)
+        let yesDeleteAction = UIAlertAction(title: "Yes", style: .destructive) { [self] (action) in
+            DataManager.shared.deleteCard(card: card as! TrelloCard)
+            self.list?.removeFromTrelloCard(card as! TrelloCard)
+            tableView.reloadData()
+        }
+        
+        let noDeleteAction = UIAlertAction(title: "No", style: .default) { (action) in
+        }
+        
+        areYouSureAlert.addAction(noDeleteAction)
+        areYouSureAlert.addAction(yesDeleteAction)
+        viewController?.present(areYouSureAlert, animated: true)
     }
     
     private func setupLongGestureRecognizerOnCollection() {
@@ -132,7 +145,7 @@ public final class ListViewCell: UICollectionViewCell {
         
         let cell = gestureRecognizer.location(in: tableView)
         if let indexPath = tableView.indexPathForRow(at: cell) {
-            deleteCard(at: indexPath.row)
+            deleteCard(at: indexPath)
         }
     }
     
@@ -140,9 +153,7 @@ public final class ListViewCell: UICollectionViewCell {
     static var reuseId: String {
         return String(describing: self)
     }
-    
-//    let cellSpacingHeight: CGFloat = 5
-    
+        
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -163,7 +174,7 @@ public final class ListViewCell: UICollectionViewCell {
         layer.masksToBounds = true
     }
     
-    private func setupFor(list: List) {
+    private func setupFor(list: TrelloList) {
         listTitleLabel.text = list.title
     }
     
@@ -182,57 +193,16 @@ extension ListViewCell: UIGestureRecognizerDelegate {}
 
 // MARK: - UITableView Delegate and DataSource implementations
 extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
-//    public func numberOfSections(in tableView: UITableView) -> Int {
-//        return list?.cards?.count ?? 0
-//    }
-//
-//    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        return 1
-//    }
-//
-//    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        guard let cell = tableView.dequeueReusableCell(withIdentifier: CardViewCell.reuseId, for: indexPath) as? CardViewCell else {
-//            fatalError()
-//        }
-//
-//        let card = list?.cards?[indexPath.section]
-//        cell.card = card
-//
-//        cell.backgroundColor = UIColor.white
-//        cell.layer.borderColor = UIColor.black.cgColor
-//        cell.layer.borderWidth = 1
-//        cell.layer.cornerRadius = 8
-//        cell.clipsToBounds = true
-//
-//        return cell
-//    }
-//
-//    public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//        let headerView = UIView()
-//        headerView.backgroundColor = UIColor.red
-//        return headerView
-//    }
-//
-//    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-//        return cellSpacingHeight
-//    }
-//
-//    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        tableView.deselectRow(at: indexPath, animated: true)
-//    }
-    
-    // divisao
-    
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return list?.cards?.count ?? 0
+        return self.list?.trelloCard?.count ?? 0
     }
 
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CardViewCell.reuseId, for: indexPath) as? CardViewCell else {
             fatalError()
         }
-        let card = list?.cards?[indexPath.row]
-        cell.card = card
+        let card = list?.trelloCard?[indexPath.row]
+        cell.card = card as? TrelloCard
         return cell
     }
 
@@ -244,14 +214,15 @@ extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
 // MARK: - UITableViewDragDelegate implementations
 extension ListViewCell: UITableViewDragDelegate {
     public func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let list = list, let listData = list.cards?[indexPath.row].title.data(using: .utf8) else {
+        guard let list = list,
+              let listData = (list.trelloCard?[indexPath.row] as AnyObject).title!.data(using: .utf8) else {
             return []
         }
         
         let itemProvider = NSItemProvider(item: listData as NSData, typeIdentifier: UTType.utf8PlainText.identifier as String)
         let dragItem = UIDragItem(itemProvider: itemProvider)
         session.localContext = (list, indexPath, tableView)
-        
+
         return [dragItem]
     }
 }
@@ -273,9 +244,28 @@ extension ListViewCell: UITableViewDropDelegate {
                     } else if sourceIndexPath.row > destinationIndexPath.row {
                         updatedIndexPaths = (destinationIndexPath.row...sourceIndexPath.row).map { IndexPath(row: $0, section: 0)}
                     }
+//                    self.tableView.beginUpdates()
+//                    let card = self.list?.trelloCard?[sourceIndexPath.row]
+//                    self.list?.removeFromTrelloCard(at: sourceIndexPath.row)
+//                    DataManager.shared.deleteCard(card: card as! TrelloCard)
+//                    let newCard = DataManager.shared.card(title: string, list: self.list!)
+//                    self.list?.insertIntoTrelloCard(newCard, at: destinationIndexPath.row)
+//                    self.tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
+//                    self.tableView.endUpdates()
+//                    DataManager.shared.save()
                     self.tableView.beginUpdates()
-                    self.list?.cards?.remove(at: sourceIndexPath.row)
-                    self.list?.cards?.insert(Card(title: string), at: destinationIndexPath.row)
+                    
+                    guard let card = self.list?.trelloCard?[sourceIndexPath.row] else {
+                        fatalError()
+                    }
+                    
+                    self.list?.removeFromTrelloCard(card as! TrelloCard)
+                    DataManager.shared.deleteCard(card: card as! TrelloCard)
+                    
+                    let newCard = DataManager.shared.card(title: string, list: self.list!)
+                    self.list?.insertIntoTrelloCard(newCard, at: destinationIndexPath.row)
+                    DataManager.shared.save()
+                    
                     self.tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
                     self.tableView.endUpdates()
                     break
@@ -283,17 +273,21 @@ extension ListViewCell: UITableViewDropDelegate {
                 case (nil, .some(let destinationIndexPath)):
                     self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
                     self.tableView.beginUpdates()
-                    self.list?.cards?.insert(Card(title: string), at: destinationIndexPath.row)
+                    self.list?.insertIntoTrelloCard(DataManager.shared.card(title: string, list: self.list!), at: destinationIndexPath.row)
                     self.tableView.insertRows(at: [destinationIndexPath], with: .automatic)
                     self.tableView.endUpdates()
+                    DataManager.shared.save()
                     break
                     
                 case (nil, nil):
                     self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
                     self.tableView.beginUpdates()
-                    self.list?.cards?.append(Card(title: string))
-                    self.tableView.insertRows(at: [IndexPath(row: (self.list!.cards?.count ?? 0) - 1, section: 0)], with: .automatic)
+                    let newCard = DataManager.shared.card(title: string, list: self.list!)
+                    self.list?.addToTrelloCard(newCard)
+                    self.tableView.insertRows(at: [IndexPath(row: (self.list!.trelloCard?.count ?? 0) - 1, section: 0)], with: .automatic)
                     self.tableView.endUpdates()
+                    DataManager.shared.save()
+
                     
                 default: break
                 }
@@ -323,7 +317,7 @@ fileprivate class CardViewCell: UITableViewCell {
         return String(describing: self)
     }
     
-    var card: Card? {
+    var card: TrelloCard? {
         didSet {
             guard let card = card else { return }
             setupFor(card: card)
@@ -357,7 +351,7 @@ fileprivate class CardViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func setupFor(card: Card) {
+    private func setupFor(card: TrelloCard) {
         itemLabel.text = card.title
     }
     

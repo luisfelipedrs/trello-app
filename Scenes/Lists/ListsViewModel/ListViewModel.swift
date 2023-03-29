@@ -15,20 +15,8 @@ protocol ListViewModelDelegate: AnyObject {
 public final class ListViewModel {
     
     weak var delegate: ListViewModelDelegate?
-    
     var api: PhotoApi?
-    
-    var board: Board?
-    
-    func getLists() {
-        guard let boardLists = board?.lists else { return }
-        board?.lists = boardLists
-    }
-    
-    func addList(_ list: List) {
-        self.board?.addList(list)
-        self.delegate?.reload()
-    }
+    var board: TrelloBoard?
     
     func getBackgroudImageUrl() {
         if board?.backgroundImageUrl == nil {

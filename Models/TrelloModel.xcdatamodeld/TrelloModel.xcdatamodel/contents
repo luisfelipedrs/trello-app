@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21279" systemVersion="21G419" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="TrelloBoard" representedClassName="TrelloBoard" syncable="YES">
+        <attribute name="backgroundImageUrl" optional="YES" attributeType="URI"/>
+        <attribute name="title" attributeType="String"/>
+        <relationship name="trelloList" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TrelloList" inverseName="trelloBoard" inverseEntity="TrelloList"/>
+    </entity>
+    <entity name="TrelloCard" representedClassName="TrelloCard" syncable="YES">
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <relationship name="trelloList" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TrelloList" inverseName="trelloCard" inverseEntity="TrelloList" spotlightIndexingEnabled="YES"/>
+    </entity>
+    <entity name="TrelloList" representedClassName="TrelloList" syncable="YES">
+        <attribute name="title" attributeType="String"/>
+        <relationship name="trelloBoard" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TrelloBoard" inverseName="trelloList" inverseEntity="TrelloBoard" spotlightIndexingEnabled="YES"/>
+        <relationship name="trelloCard" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TrelloCard" inverseName="trelloList" inverseEntity="TrelloCard"/>
+    </entity>
+</model>

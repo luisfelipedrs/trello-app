@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 public final class ListsViewController: UIViewController {
     
@@ -14,9 +15,9 @@ public final class ListsViewController: UIViewController {
     private lazy var pageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.translatesAutoresizingMaskIntoConstraints = false
-        pageControl.numberOfPages = viewModel?.board?.lists?.count ?? 0
+        pageControl.numberOfPages = viewModel?.board?.trelloList?.count ?? 0
         pageControl.backgroundStyle = .prominent
-        pageControl.isHidden = (viewModel?.board?.lists?.count ?? 0) > 1 ? false : true
+        pageControl.isHidden = (viewModel?.board?.trelloList?.count ?? 0) > 1 ? false : true
         return pageControl
     }()
     
@@ -68,8 +69,6 @@ public final class ListsViewController: UIViewController {
     }
     
     private func setupViews() {
-//        configureViews(view: backgroundImage)
-//        configureViews(view: alphaLayer)
         view.addSubview(collectionView)
         view.addSubview(pageControl)
         view.backgroundColor = .systemBackground
@@ -77,15 +76,14 @@ public final class ListsViewController: UIViewController {
         viewModel?.delegate = self
         configureTitleWith(string: (viewModel?.board!.title)!)
         configureNewListButton()
-        viewModel?.getLists()
         viewModel?.getBackgroudImageUrl()
         setupLongGestureRecognizerOnCollection()
         collectionView.backgroundView = backgroundImage
     }
     
     private func updateViews() {
-        self.pageControl.numberOfPages = self.viewModel?.board?.lists?.count ?? 0
-        self.pageControl.isHidden = (self.viewModel?.board?.lists?.count ?? 0) > 1 ? false : true
+        self.pageControl.numberOfPages = self.viewModel?.board?.trelloList?.count ?? 0
+        self.pageControl.isHidden = (self.viewModel?.board?.trelloList?.count ?? 0) > 1 ? false : true
         self.collectionView.reloadData()
     }
     
@@ -95,33 +93,48 @@ public final class ListsViewController: UIViewController {
     }
     
     @objc private func addNewList() {
-        let ac = UIAlertController(title: "Enter list title: ", message: nil, preferredStyle: .alert)
-        ac.addTextField()
+        var textField = UITextField()
         
-        let submitAction = UIAlertAction(title: "Submit", style: .default) { [unowned ac] _ in
-            let answer = ac.textFields![0]
-            if !answer.text!.isEmpty {
-                let newList = List(title: answer.text!, cards: [])
-                self.viewModel?.addList(newList)
-            }
+        let alert = UIAlertController(title: "Enter new list", message: "", preferredStyle: .alert)
+        let createAction = UIAlertAction(title: "Create", style: .default) { (action) in
+            let list = DataManager.shared.list(title: textField.text ?? "lista padrao", board: (self.viewModel?.board)!)
+            self.viewModel?.board?.addToTrelloList(list)
+            DataManager.shared.save()
+            self.reload()
         }
         
-        ac.addAction(submitAction)
-        present(ac, animated: true)
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Ex: Board 1"
+            textField = alertTextField
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive) { (action) in
+            self.dismiss(animated: true)
+        }
+        
+        alert.addAction(createAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
     }
     
-    @objc private func deleteList(at index: Int) {
-        let ac = UIAlertController(title: "Delete list?", message: nil, preferredStyle: .alert)
-        
-        let confirm = UIAlertAction(title: "OK", style: .destructive) { _ in
-            self.viewModel?.board?.lists?.remove(at: index)
-            self.updateViews()
+    @objc private func deleteList(at indexPath: IndexPath) {
+        guard let list = viewModel?.board?.trelloList?[indexPath.row] else {
+            fatalError()
         }
-        let cancel = UIAlertAction(title: "Cancel", style: .default)
+        let areYouSureAlert = UIAlertController(title: "Are you sure you want to delete this list?", message: "", preferredStyle: .alert)
+        let yesDeleteAction = UIAlertAction(title: "Yes", style: .destructive) { [self] (action) in
+            DataManager.shared.deleteList(list: list as! TrelloList)
+            self.viewModel?.board?.removeFromTrelloList(list as! TrelloList)
+            collectionView.deleteItems(at: [indexPath])
+            self.reload()
+        }
         
-        ac.addAction(cancel)
-        ac.addAction(confirm)
-        present(ac, animated: true)
+        let noDeleteAction = UIAlertAction(title: "No", style: .default) { (action) in
+        }
+        
+        areYouSureAlert.addAction(noDeleteAction)
+        areYouSureAlert.addAction(yesDeleteAction)
+        self.present(areYouSureAlert, animated: true)
     }
     
     private func setupLongGestureRecognizerOnCollection() {
@@ -139,7 +152,8 @@ public final class ListsViewController: UIViewController {
         
         let cell = gestureRecognizer.location(in: collectionView)
         if let indexPath = collectionView.indexPathForItem(at: cell) {
-            deleteList(at: indexPath.row)
+            deleteList(at: indexPath)
+            self.reload()
         }
     }
     
@@ -171,7 +185,7 @@ public final class ListsViewController: UIViewController {
 // MARK: - CollectionView DataSource and Delegate
 extension ListsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel?.board?.lists?.count ?? 0
+        return viewModel?.board?.trelloList?.count ?? 0
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -179,8 +193,8 @@ extension ListsViewController: UICollectionViewDataSource, UICollectionViewDeleg
             fatalError()
         }
         
-        let list = viewModel?.board?.lists?[indexPath.row]
-        cell.list = list
+        let list = viewModel?.board?.trelloList?[indexPath.row]
+        cell.list = list as? TrelloList
         cell.viewController = self
         return cell
     }
