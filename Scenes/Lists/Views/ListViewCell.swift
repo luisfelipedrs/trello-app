@@ -214,11 +214,12 @@ extension ListViewCell: UITableViewDelegate, UITableViewDataSource {
 // MARK: - UITableViewDragDelegate implementations
 extension ListViewCell: UITableViewDragDelegate {
     public func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        
         guard let list = list,
               let listData = (list.trelloCard?[indexPath.row] as AnyObject).title!.data(using: .utf8) else {
             return []
         }
-        
+
         let itemProvider = NSItemProvider(item: listData as NSData, typeIdentifier: UTType.utf8PlainText.identifier as String)
         let dragItem = UIDragItem(itemProvider: itemProvider)
         session.localContext = (list, indexPath, tableView)
@@ -234,9 +235,9 @@ extension ListViewCell: UITableViewDropDelegate {
  as String]) {
             coordinator.session.loadObjects(ofClass: NSString.self) { (items) in
                 guard let string = items.first as? String else { return }
-                
+
                 var updatedIndexPaths = [IndexPath]()
-                
+
                 switch (coordinator.items.first?.sourceIndexPath, coordinator.destinationIndexPath) {
                 case (.some(let sourceIndexPath), .some(let destinationIndexPath)):
                     if sourceIndexPath.row < destinationIndexPath.row {
@@ -244,41 +245,30 @@ extension ListViewCell: UITableViewDropDelegate {
                     } else if sourceIndexPath.row > destinationIndexPath.row {
                         updatedIndexPaths = (destinationIndexPath.row...sourceIndexPath.row).map { IndexPath(row: $0, section: 0)}
                     }
-//                    self.tableView.beginUpdates()
-//                    let card = self.list?.trelloCard?[sourceIndexPath.row]
-//                    self.list?.removeFromTrelloCard(at: sourceIndexPath.row)
-//                    DataManager.shared.deleteCard(card: card as! TrelloCard)
-//                    let newCard = DataManager.shared.card(title: string, list: self.list!)
-//                    self.list?.insertIntoTrelloCard(newCard, at: destinationIndexPath.row)
-//                    self.tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
-//                    self.tableView.endUpdates()
-//                    DataManager.shared.save()
                     self.tableView.beginUpdates()
-                    
-                    guard let card = self.list?.trelloCard?[sourceIndexPath.row] else {
-                        fatalError()
-                    }
-                    
+                    let card = self.list?.trelloCard?[sourceIndexPath.row]
                     self.list?.removeFromTrelloCard(card as! TrelloCard)
-                    DataManager.shared.deleteCard(card: card as! TrelloCard)
-                    
-                    let newCard = DataManager.shared.card(title: string, list: self.list!)
-                    self.list?.insertIntoTrelloCard(newCard, at: destinationIndexPath.row)
-                    DataManager.shared.save()
-                    
+                    self.list?.insertIntoTrelloCard(card as! TrelloCard, at: destinationIndexPath.row)
                     self.tableView.reloadRows(at: updatedIndexPaths, with: .automatic)
                     self.tableView.endUpdates()
-                    break
-                    
-                case (nil, .some(let destinationIndexPath)):
-                    self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
-                    self.tableView.beginUpdates()
-                    self.list?.insertIntoTrelloCard(DataManager.shared.card(title: string, list: self.list!), at: destinationIndexPath.row)
-                    self.tableView.insertRows(at: [destinationIndexPath], with: .automatic)
-                    self.tableView.endUpdates()
                     DataManager.shared.save()
                     break
+
+                case (nil, .some(_)):
+//                    self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
+//                    self.tableView.beginUpdates()
+//                    let card = DataManager.shared.card(title: string, list: self.list!)
+//                    self.list?.insertIntoTrelloCard(card , at: destinationIndexPath.row)
+//                    self.tableView.endUpdates()
                     
+//                    self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
+//                    self.tableView.beginUpdates()
+//                    self.list?.insertIntoTrelloCard(DataManager.shared.card(title: string, list: self.list!), at: destinationIndexPath.row)
+//                    self.tableView.insertRows(at: [destinationIndexPath], with: .automatic)
+//                    self.tableView.endUpdates()
+//                    DataManager.shared.save()
+                    break
+
                 case (nil, nil):
                     self.removeSourceTableData(localContext: coordinator.session.localDragSession?.localContext)
                     self.tableView.beginUpdates()
@@ -288,7 +278,6 @@ extension ListViewCell: UITableViewDropDelegate {
                     self.tableView.endUpdates()
                     DataManager.shared.save()
 
-                    
                 default: break
                 }
             }
@@ -296,9 +285,9 @@ extension ListViewCell: UITableViewDropDelegate {
     }
     
     public func removeSourceTableData(localContext: Any?) {
-        if let (dataSource, sourceIndexPath, tableView) = localContext as? (List, IndexPath, UITableView) {
+        if let (dataSource, sourceIndexPath, tableView) = localContext as? (TrelloList, IndexPath, UITableView) {
             tableView.beginUpdates()
-            dataSource.cards?.remove(at: sourceIndexPath.row)
+            dataSource.removeFromTrelloCard(at: sourceIndexPath.row)
             tableView.deleteRows(at: [sourceIndexPath], with: .automatic)
             tableView.endUpdates()
         }
